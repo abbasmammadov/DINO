@@ -13,7 +13,7 @@ from util.utils import slprint, to_device
 import torch
 
 import util.misc as utils
-from datasets.coco_eval import CocoEvaluator
+from datasets.coco_eval_new import CocoEvaluator
 from datasets.panoptic_eval import PanopticEvaluator
 import datetime
 from util import box_ops

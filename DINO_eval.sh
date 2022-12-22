@@ -1,6 +1,6 @@
 coco_path=$1
 checkpoint=$2
-python3 newmain.py \
+python3 validate-railway-dataset.py \
   --output_dir logs/val/exp_rail\
 	-c config/DINO/DINO_4scale.py --coco_path $coco_path  \
 	--eval --resume $checkpoint \

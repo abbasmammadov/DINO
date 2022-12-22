@@ -12,8 +12,8 @@ import copy
 import numpy as np
 import torch
 
-from pycocotools.cocoeval import COCOeval
-# from editted.modified_cocoeval import COCOeval
+# from pycocotools.cocoeval import COCOeval
+from editted.modified_cocoeval import COCOeval
 from pycocotools.coco import COCO
 import pycocotools.mask as mask_util
 
