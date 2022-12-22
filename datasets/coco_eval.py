@@ -12,7 +12,8 @@ import copy
 import numpy as np
 import torch
 
-from pycocotools.cocoeval import COCOeval
+# from pycocotools.cocoeval import COCOeval
+from editted.modified_cocoeval import COCOeval
 from pycocotools.coco import COCO
 import pycocotools.mask as mask_util
 
@@ -20,7 +21,7 @@ from util.misc import all_gather
 
 
 class CocoEvaluator(object):
-    def __init__(self, coco_gt, iou_types, useCats=True):
+    def __init__(self, coco_gt, iou_types, useCats=True, path_to_dataset=None):
         assert isinstance(iou_types, (list, tuple))
         coco_gt = copy.deepcopy(coco_gt)
         self.coco_gt = coco_gt
@@ -28,12 +29,18 @@ class CocoEvaluator(object):
         self.iou_types = iou_types
         self.coco_eval = {}
         for iou_type in iou_types:
-            self.coco_eval[iou_type] = COCOeval(coco_gt, iouType=iou_type)
+            self.coco_eval[iou_type] = COCOeval(coco_gt, iouType=iou_type, path_to_dataset=path_to_dataset)
             self.coco_eval[iou_type].useCats = useCats
 
         self.img_ids = []
         self.eval_imgs = {k: [] for k in iou_types}
         self.useCats = useCats
+
+    def checking(self):
+        for iou_type in self.iou_types:
+            coco_eval = self.coco_eval[iou_type]
+            print(iou_type)
+            print(coco_eval.checking())
 
     def update(self, predictions):
         img_ids = list(np.unique(list(predictions.keys())))
@@ -223,11 +230,14 @@ def evaluate(self):
     Run per image evaluation on given images and store results (a list of dict) in self.evalImgs
     :return: None
     '''
+    # tic = time.time()
+    # print('Running per image evaluation...')
     p = self.params
     # add backward compatibility if useSegm is specified in params
     if p.useSegm is not None:
         p.iouType = 'segm' if p.useSegm == 1 else 'bbox'
         print('useSegm (deprecated) is not None. Running {} evaluation'.format(p.iouType))
+    # print('Evaluate annotation type *{}*'.format(p.iouType))
     p.imgIds = list(np.unique(p.imgIds))
     if p.useCats:
         p.catIds = list(np.unique(p.catIds))
@@ -258,7 +268,8 @@ def evaluate(self):
     # this is NOT in the pycocotools code, but could be done outside
     evalImgs = np.asarray(evalImgs).reshape(len(catIds), len(p.areaRng), len(p.imgIds))
     self._paramsEval = copy.deepcopy(self.params)
-
+    # toc = time.time()
+    # print('DONE (t={:0.2f}s).'.format(toc-tic))
     return p.imgIds, evalImgs
 
 #################################################################
