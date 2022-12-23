@@ -21,7 +21,7 @@ from util.misc import all_gather
 
 
 class CocoEvaluator(object):
-    def __init__(self, coco_gt, iou_types, useCats=True, path_to_dataset=None):
+    def __init__(self, coco_gt, iou_types, useCats=True):
         assert isinstance(iou_types, (list, tuple))
         coco_gt = copy.deepcopy(coco_gt)
         self.coco_gt = coco_gt
@@ -29,18 +29,13 @@ class CocoEvaluator(object):
         self.iou_types = iou_types
         self.coco_eval = {}
         for iou_type in iou_types:
-            self.coco_eval[iou_type] = COCOeval(coco_gt, iouType=iou_type, path_to_dataset=path_to_dataset)
+            self.coco_eval[iou_type] = COCOeval(coco_gt, iouType=iou_type)
             self.coco_eval[iou_type].useCats = useCats
 
         self.img_ids = []
         self.eval_imgs = {k: [] for k in iou_types}
         self.useCats = useCats
 
-    def checking(self):
-        for iou_type in self.iou_types:
-            coco_eval = self.coco_eval[iou_type]
-            print(iou_type)
-            print(coco_eval.checking())
 
     def update(self, predictions):
         img_ids = list(np.unique(list(predictions.keys())))
