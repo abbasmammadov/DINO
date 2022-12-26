@@ -134,6 +134,8 @@ for mode in ["train", "val", "test"]:
             curr = json.load(curr_file)
         width = curr['metadata']['width']
         height = curr['metadata']['height']
+        if width != 1920 or height != 1080:
+            print(width, height, "wrong resolution")
         list_img = curr['annotations']
         for i in range(len(list_img)):
             curr_img = list_img[i]

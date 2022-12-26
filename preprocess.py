@@ -174,6 +174,10 @@ for i in range(len(files_without_suffix)):
     test_ratio = 0.1
     is_valid = True
 
+    if curr['metadata']['width'] != 1920 or curr['metadata']['height'] != 1080:
+        is_valid = False
+        print('wrong resolution filtered')
+        
     for obj in curr['annotations']:
         temp_id = obj['category_id']
         obj_id = -1
