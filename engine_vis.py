@@ -16,6 +16,7 @@ import util.misc as utils
 from datasets.coco_eval_new import CocoEvaluator
 from datasets.panoptic_eval import PanopticEvaluator
 import datetime
+from os import listdir
 from util import box_ops
 import yaml
 import time
@@ -142,12 +143,15 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
         need_tgt_for_training = args.use_dn
     except:
         need_tgt_for_training = False
+    
+    #make metadatafile
 
     class_names = get_class_names(args.coco_path)
 
     img_names = list()
 
-    with open(os.path.join(args.coco_path, 'annotations', 'instances_test.json'), 'r') as out_f:
+
+    with open(os.path.join(args.coco_path, 'annotations/instances_test.json'), 'r') as out_f:
         coco_data = json.load(out_f)
         out_f.close()
     for img in coco_data['images']:
@@ -426,7 +430,7 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
         coco_evaluator.summarize()
     
     f.write("Average FPS: " + str(avg_fps) + " fps\n\n" )
-    f.close()
+    #f.close()
 
     panoptic_res = None
     if panoptic_evaluator is not None:
@@ -443,6 +447,8 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
         stats['PQ_st'] = panoptic_res["Stuff"]
 
 
+    f.write(coco_evaluator.coco_eval['bbox'].summarized_text)
+    f.close()
 
     return stats, coco_evaluator
 
