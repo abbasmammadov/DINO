@@ -51,13 +51,13 @@ if set(check1) != set(check2) or len(check1) != len(check2):
 os.makedirs(os.path.join(TARGET_PATH, "img"), exist_ok=True)
 os.makedirs(os.path.join(TARGET_PATH, "json"), exist_ok=True)
 
-'''
+
 for file in images:
     shutil.copy(file, os.path.join(TARGET_PATH, "img"))
 
 for file in labels:
     shutil.copy(file, os.path.join(TARGET_PATH, "json"))
-'''
+
 
 modes = ["train", "val", "test", "train_json", "val_json", "test_json"]
 for mode in modes:
@@ -130,7 +130,7 @@ for root, dirs, files in os.walk(ROOT):
                     if obj['status'] != "normal" and obj['status'] != "abnormal":
                         is_valid = False
                         #print(obj)
-
+            
             if is_valid:            
                 for value in normal_list:
                     obj_normal_list[value] += 1
@@ -266,11 +266,11 @@ for path in splitter_json["test"]:
                 break
                 
         if obj_id >= 0:
-            #if obj['status'] == "normal":
-            if obj['status'] == "normal" and obj_id not in normal_list:
+            if obj['status'] == "normal":
+            #if obj['status'] == "normal" and obj_id not in normal_list:
                 normal_list.append(obj_id)
-            #if obj['status'] == "abnormal":
-            if obj['status'] == "abnormal" and obj_id not in abnormal_list:
+            if obj['status'] == "abnormal":
+            #if obj['status'] == "abnormal" and obj_id not in abnormal_list:
                 abnormal_list.append(obj_id)
             if obj['status'] != "normal" and obj['status'] != "abnormal":
                 is_valid = False
@@ -327,11 +327,11 @@ for path in splitter_json["val"]:
                 break
                 
         if obj_id >= 0:
-            #if obj['status'] == "normal":
-            if obj['status'] == "normal" and obj_id not in normal_list:
+            if obj['status'] == "normal":
+            #if obj['status'] == "normal" and obj_id not in normal_list:
                 normal_list.append(obj_id)
-            #if obj['status'] == "abnormal":
-            if obj['status'] == "abnormal" and obj_id not in abnormal_list:
+            if obj['status'] == "abnormal":
+            #if obj['status'] == "abnormal" and obj_id not in abnormal_list:
                 abnormal_list.append(obj_id)
             if obj['status'] != "normal" and obj['status'] != "abnormal":
                 is_valid = False
@@ -388,11 +388,11 @@ for path in splitter_json["train"]:
                 break
                 
         if obj_id >= 0:
-            #if obj['status'] == "normal":
-            if obj['status'] == "normal" and obj_id not in normal_list:
+            if obj['status'] == "normal":
+            #if obj['status'] == "normal" and obj_id not in normal_list:
                 normal_list.append(obj_id)
-            #if obj['status'] == "abnormal":
-            if obj['status'] == "abnormal" and obj_id not in abnormal_list:
+            if obj['status'] == "abnormal":
+            #if obj['status'] == "abnormal" and obj_id not in abnormal_list:
                 abnormal_list.append(obj_id)
             if obj['status'] != "normal" and obj['status'] != "abnormal":
                 is_valid = False
