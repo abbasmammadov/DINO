@@ -108,8 +108,9 @@ for mode in ["train", "val", "test"]:
         }
         categories.append(temp_now)
 
-    width = width
-    height = height
+    #width = width
+    #height = height
+    
 
     images = list()
     for file in files_without_suffix:
@@ -131,6 +132,8 @@ for mode in ["train", "val", "test"]:
         iscrowd = 0
         with open(mypath_label + file + '.json', 'r') as curr_file:
             curr = json.load(curr_file)
+        width = curr['metadata']['width']
+        height = curr['metadata']['height']
         list_img = curr['annotations']
         for i in range(len(list_img)):
             curr_img = list_img[i]
