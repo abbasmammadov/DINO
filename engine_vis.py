@@ -138,7 +138,7 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
 
 
 @torch.no_grad()
-def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, output_dir, wo_class_error=False, args=None, logger=None):
+def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, output_dir, class_info = [], wo_class_error=False, args=None, logger=None):
     try:
         need_tgt_for_training = args.use_dn
     except:
@@ -446,8 +446,26 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
         stats['PQ_th'] = panoptic_res["Things"]
         stats['PQ_st'] = panoptic_res["Stuff"]
 
+    
+    summarized_data = coco_evaluator.coco_eval['bbox'].class_dictionary
+    newstr = str(timeStamped()) + '\n'
+    valid_class_num = 0
+    total_ap_at_75 = 0
+    total_map = 0
+    for class_name in summarized_data:
+        for obj in class_info:
+            if obj['supercategory'] + '_' + obj['name'] == class_name.split('-')[0] and obj['input_type'] == "box":
+                newstr += class_name + ': [AP@.75: ' + str(format(summarized_data[class_name]['75'], '.4f')) + ' AP@.5:.95: ' + str(format(summarized_data[class_name]['total'], '.4f')) + ']\n'
+                total_ap_at_75 += summarized_data[class_name]['75']
+                total_map += summarized_data[class_name]['total']
+                valid_class_num += 1
+                print(class_name + ': [AP@.75: ' + str(format(summarized_data[class_name]['75'], '.4f')) + ' AP@.5:.95: ' + str(format(summarized_data[class_name]['total'], '.4f')) + ']')
+                break
+    print('Total mAP@.75: ' + str(format(float(total_ap_at_75/valid_class_num), '.4f')))
+    newstr += 'Total mAP@.75: ' + str(format(float(total_ap_at_75/valid_class_num), '.4f')) + '\n'
 
-    f.write(coco_evaluator.coco_eval['bbox'].summarized_text)
+    f.write(newstr)
+    #f.write(coco_evaluator.coco_eval['bbox'].summarized_text)
     f.close()
 
     return stats, coco_evaluator

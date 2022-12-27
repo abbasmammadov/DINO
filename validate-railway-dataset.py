@@ -1,4 +1,6 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+
+
 import argparse
 import datetime
 import json
@@ -12,6 +14,7 @@ import os, sys
 from typing import Optional
 from util.get_param_dicts import get_param_dict
 from os import listdir
+from importlib import reload
 
 
 
@@ -46,7 +49,7 @@ def get_args_parser():
     parser.add_argument('--coco_panoptic_path', type=str)
     parser.add_argument('--remove_difficult', action='store_true')
     parser.add_argument('--fix_size', action='store_true')
-
+    parser.add_argument('--data_type', type=str, default='railway')
 
     # training parameters
     parser.add_argument('--output_dir', default='',
@@ -183,8 +186,7 @@ def main(args):
     height = 1080
     category_info = []
     category = []
-    if 0:
-    #if dataset_name == 'railway':
+    if args.data_type == 'railway':
         with open('railway_metadata.json', 'r') as curr_file:
             category_info = json.load(curr_file)['categories']
     else:
@@ -387,26 +389,27 @@ def main(args):
             json.dump(main, outfile, ensure_ascii=False)
 
 
-    dataset_train = build_dataset(image_set='train', args=args)
+    #dataset_train = build_dataset(image_set='train', args=args)
     dataset_val = build_dataset(image_set='test', args=args)
 
     if args.distributed:
-        sampler_train = DistributedSampler(dataset_train)
+        #sampler_train = DistributedSampler(dataset_train)
         sampler_val = DistributedSampler(dataset_val, shuffle=False)
     else:
-        sampler_train = torch.utils.data.RandomSampler(dataset_train)
+        #sampler_train = torch.utils.data.RandomSampler(dataset_train)
         sampler_val = torch.utils.data.SequentialSampler(dataset_val)
 
-    batch_sampler_train = torch.utils.data.BatchSampler(
-        sampler_train, args.batch_size, drop_last=True)
+    #batch_sampler_train = torch.utils.data.BatchSampler(
+    #    sampler_train, args.batch_size, drop_last=True)
 
-    data_loader_train = DataLoader(dataset_train, batch_sampler=batch_sampler_train,
-                                   collate_fn=utils.collate_fn, num_workers=args.num_workers)
+    #data_loader_train = DataLoader(dataset_train, batch_sampler=batch_sampler_train,
+    #                               collate_fn=utils.collate_fn, num_workers=args.num_workers)
     data_loader_val = DataLoader(dataset_val, 1, sampler=sampler_val,
                                  drop_last=False, collate_fn=utils.collate_fn, num_workers=args.num_workers)
 
     if args.onecyclelr:
-        lr_scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=args.lr, steps_per_epoch=len(data_loader_train), epochs=args.epochs, pct_start=0.2)
+        pass
+        #lr_scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=args.lr, steps_per_epoch=len(data_loader_train), epochs=args.epochs, pct_start=0.2)
     elif args.multi_step_lr:
         lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=args.lr_drop_list)
     else:
@@ -476,13 +479,14 @@ def main(args):
     if args.eval:
         os.environ['EVAL_FLAG'] = 'TRUE'
         test_stats, coco_evaluator = evaluate(model, criterion, postprocessors,
-                                              data_loader_val, base_ds, device, args.output_dir, wo_class_error=wo_class_error, args=args)
+                                              data_loader_val, base_ds, device, args.output_dir,
+                                              class_info=category_info, wo_class_error=wo_class_error, args=args)
         if args.output_dir:
             utils.save_on_master(coco_evaluator.coco_eval["bbox"].eval, output_dir / "eval.pth")
 
         log_stats = {**{f'test_{k}': v for k, v in test_stats.items()} }
         if args.output_dir and utils.is_main_process():
-            with (output_dir / "log.txt").open("a") as f:
+            with (output_dir / "log.txt").open("a", encoding='utf-8') as f:
                 f.write(json.dumps(log_stats) + "\n")
 
         return
@@ -492,11 +496,11 @@ def main(args):
     best_map_holder = BestMetricHolder(use_ema=args.use_ema)
     for epoch in range(args.start_epoch, args.epochs):
         epoch_start_time = time.time()
-        if args.distributed:
-            sampler_train.set_epoch(epoch)
-        train_stats = train_one_epoch(
-            model, criterion, data_loader_train, optimizer, device, epoch,
-            args.clip_max_norm, wo_class_error=wo_class_error, lr_scheduler=lr_scheduler, args=args, logger=(logger if args.save_log else None), ema_m=ema_m)
+        #if args.distributed:
+        #    sampler_train.set_epoch(epoch)
+        #train_stats = train_one_epoch(
+        #    model, criterion, data_loader_train, optimizer, device, epoch,
+        #    args.clip_max_norm, wo_class_error=wo_class_error, lr_scheduler=lr_scheduler, args=args, logger=(logger if args.save_log else None), ema_m=ema_m)
         if args.output_dir:
             checkpoint_paths = [output_dir / 'checkpoint.pth']
 
@@ -524,7 +528,7 @@ def main(args):
         # eval
         test_stats, coco_evaluator = evaluate(
             model, criterion, postprocessors, data_loader_val, base_ds, device, args.output_dir,
-            wo_class_error=wo_class_error, args=args, logger=(logger if args.save_log else None)
+            class_info=category_info, wo_class_error=wo_class_error, args=args, logger=(logger if args.save_log else None)
         )
         map_regular = test_stats['coco_eval_bbox'][0]
         _isbest = best_map_holder.update(map_regular, epoch, is_ema=False)
@@ -577,7 +581,7 @@ def main(args):
         log_stats['epoch_time'] = epoch_time_str
 
         if args.output_dir and utils.is_main_process():
-            with (output_dir / "log.txt").open("a") as f:
+            with (output_dir / "log.txt").open("a", encoding='utf-8') as f:
                 f.write(json.dumps(log_stats) + "\n")
 
             # for evaluation logs

@@ -87,6 +87,8 @@ class COCOeval:
         self._paramsEval = {}               # parameters for evaluation
         self.stats = []                     # result summarization
         self.ious = {}                      # ious between all gts and dts
+        self.summarized_text = ''
+        self.class_dictionary = {}
         if not cocoGt is None:
             self.params.imgIds = sorted(cocoGt.getImgIds())
             self.params.catIds = sorted(cocoGt.getCatIds())
@@ -491,32 +493,23 @@ class COCOeval:
 
                 num_classes = num_classes
                 avg_ap = 0.0
-                global class_dictionary
-                global total_map_at_75
 
-                if class_dictionary == {}:
-                    class_dictionary = {k: {'75': 0, 'total': 0} for k in class_names}
+                if self.class_dictionary == {}:
+                    self.class_dictionary = {k: {'75': 0, 'total': 0} for k in class_names}
 
-                print("*****************")
-                print("*****************")
-                print("*****************")
+                
                 if ap == 1:
                     for i in range(0, num_classes):
-                        print('category : {0} : {1}'.format(i,np.mean(s[:,:,i,:])))
+                        #print('category : {0} : {1}'.format(i,np.mean(s[:,:,i,:])))
                         avg_ap += np.mean(s[:,:,i,:])
 
                         if store_iou_val == 0.75:
-                            class_dictionary[class_names[i]]['75'] = float(np.mean(s[:,:,i,:]))
-                            total_map_at_75 += np.mean(s[:,:,i,:])
+                            self.class_dictionary[class_names[i]]['75'] = float(np.mean(s[:,:,i,:]))
 
                         if store_iou_val == None and maxDets == 100 and areaRng == 'all':
-                            class_dictionary[class_names[i]]['total'] = float(np.mean(s[:,:,i,:]))
+                            self.class_dictionary[class_names[i]]['total'] = float(np.mean(s[:,:,i,:]))
 
-                    print('(all categories) mAP : {}'.format(avg_ap / num_classes))
-                    total_map_at_75 /= num_classes
-                print("*****************")
-                print("*****************")
-                print("*****************")
+                    #print('(all categories) mAP : {}'.format(avg_ap / num_classes))
 
                 
             print(iStr.format(titleStr, typeStr, iouStr, areaRng, maxDets, mean_s))
@@ -540,17 +533,17 @@ class COCOeval:
             time.sleep(5)
 
 
-            newstr = str(timeStamped()) + '\n'
+            #newstr = str(timeStamped()) + '\n'
 
-            for class_name in class_dictionary:
-                newstr += class_name + ': [AP@.75: ' + str(format(class_dictionary[class_name]['75'], '.4f')) + ' AP@.5:.95: ' + str(format(class_dictionary[class_name]['total'], '.4f')) + ']\n'
+            #for class_name in class_dictionary:
+            #    newstr += class_name + ': [AP@.75: ' + str(format(class_dictionary[class_name]['75'], '.4f')) + ' AP@.5:.95: ' + str(format(class_dictionary[class_name]['total'], '.4f')) + ']\n'
 
-            newstr += 'Total mAP@.75: ' + str(format(float(total_map_at_75), '.4f')) + '\n'
+            #newstr += 'Total mAP@.75: ' + str(format(float(total_map_at_75), '.4f')) + '\n'
 
-            with open('test.txt', 'a') as f:
-                f.write(newstr)
+            #with open('test.txt', 'a') as f:
+            #    f.write(newstr)
 
-            time.sleep(3)
+            #self.summarized_text = newstr
             # print("###########")
             # print("###########")
             # print("###########")
