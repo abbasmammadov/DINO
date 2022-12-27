@@ -297,7 +297,7 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
             else:
                 continue
 
-
+        
         temp_pred = 'Detections --> '
         for i in range(new_boxes.shape[0]):
             temp_pred += '(' + labeling_with_names[i] + ' bbox-[' + str(float(new_boxes[i][0].item())/1920) + ', ' + str(float(new_boxes[i][1].item())/1080) + ', ' + str(float(new_boxes[i][2].item())/1920) + ', ' + str(float(new_boxes[i][3].item())/1080) + ']); '
@@ -396,11 +396,15 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
     avg_fps /= len(data_loader)
     new_time = str(timeStamped()) + '\n'
     for class_name in class_names:
-        new_time += class_name + ': [TP-{}, FP-{}, FN-{}]'.format(true_positives[class_name], false_positives[class_name], false_negatives[class_name]) + '\n'
-        total_gt_for_class = true_positives[class_name] + false_negatives[class_name]
-        total_pred_for_class = true_positives[class_name] + false_positives[class_name]
-        new_time += 'Total number of Ground Truth Objects: ' + str(total_gt_for_class) + '\n'
-        new_time += 'Total number of Predicted Objects: ' + str(total_pred_for_class) + '\n'
+        for obj in class_info:
+            if obj['supercategory'] + '_' + obj['name'] == class_name.split('-')[0] and obj['input_type'] == "box":
+                new_time += class_name + ': [TP-{}, FP-{}, FN-{}]'.format(true_positives[class_name], false_positives[class_name], false_negatives[class_name]) + '\n'
+                total_gt_for_class = true_positives[class_name] + false_negatives[class_name]
+                total_pred_for_class = true_positives[class_name] + false_positives[class_name]
+                new_time += 'Total number of Ground Truth Objects: ' + str(total_gt_for_class) + '\n'
+                new_time += 'Total number of Predicted Objects: ' + str(total_pred_for_class) + '\n'
+                break
+                
     
     f.write(new_time)
 
