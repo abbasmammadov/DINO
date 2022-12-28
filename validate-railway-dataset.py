@@ -480,7 +480,7 @@ def main(args):
         os.environ['EVAL_FLAG'] = 'TRUE'
         test_stats, coco_evaluator = evaluate(model, criterion, postprocessors,
                                               data_loader_val, base_ds, device, args.output_dir,
-                                              class_info=category_info, wo_class_error=wo_class_error, args=args)
+                                              data_type=args.data_type, class_info=category_info, wo_class_error=wo_class_error, args=args)
         if args.output_dir:
             utils.save_on_master(coco_evaluator.coco_eval["bbox"].eval, output_dir / "eval.pth")
 
