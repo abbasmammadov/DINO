@@ -403,14 +403,14 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
     avg_fps /= len(data_loader)
     new_time = str(timeStamped()) + '\n'
     for class_name in class_names:
-        #for obj in class_info:
-            #if obj['supercategory'] + '_' + obj['name'] == class_name.split('-')[0] and obj['input_type'] == "box":
-        new_time += class_name + ': [TP-{}, FP-{}, FN-{}]'.format(true_positives[class_name], false_positives[class_name], false_negatives[class_name]) + '\n'
-        total_gt_for_class = true_positives[class_name] + false_negatives[class_name]
-        total_pred_for_class = true_positives[class_name] + false_positives[class_name]
-        new_time += 'Total number of Ground Truth Objects: ' + str(total_gt_for_class) + '\n'
-        new_time += 'Total number of Predicted Objects: ' + str(total_pred_for_class) + '\n'
-            #break
+        for obj in class_info:
+            if obj['supercategory'] + '_' + obj['name'] == class_name.replace("-abnormal", "").replace("-normal", "") and obj['input_type'] == "box":
+                new_time += class_name + ': [TP-{}, FP-{}, FN-{}]'.format(true_positives[class_name], false_positives[class_name], false_negatives[class_name]) + '\n'
+                total_gt_for_class = true_positives[class_name] + false_negatives[class_name]
+                otal_pred_for_class = true_positives[class_name] + false_positives[class_name]
+                new_time += 'Total number of Ground Truth Objects: ' + str(total_gt_for_class) + '\n'
+                new_time += 'Total number of Predicted Objects: ' + str(total_pred_for_class) + '\n'
+                break
                 
     
     f.write(new_time)
@@ -464,14 +464,14 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
     total_ap_at_75 = 0
     total_map = 0
     for class_name in summarized_data:
-        #for obj in class_info:
-            #if obj['supercategory'] + '_' + obj['name'] == class_name.split('-')[0] and obj['input_type'] == "box":
-        newstr += class_name + ': [AP@.75: ' + str(format(summarized_data[class_name]['75'], '.4f')) + ' AP@.5:.95: ' + str(format(summarized_data[class_name]['total'], '.4f')) + ']\n'
-        total_ap_at_75 += summarized_data[class_name]['75']
-        total_map += summarized_data[class_name]['total']
-        valid_class_num += 1
-        print(class_name + ': [AP@.75: ' + str(format(summarized_data[class_name]['75'], '.4f')) + ' AP@.5:.95: ' + str(format(summarized_data[class_name]['total'], '.4f')) + ']')
-            # break
+        for obj in class_info:
+            if obj['supercategory'] + '_' + obj['name'] == class_name.replace("-abnormal", "").replace("-normal", "") and obj['input_type'] == "box":
+                newstr += class_name + ': [AP@.75: ' + str(format(summarized_data[class_name]['75'], '.4f')) + ' AP@.5:.95: ' + str(format(summarized_data[class_name]['total'], '.4f')) + ']\n'
+                total_ap_at_75 += summarized_data[class_name]['75']
+                total_map += summarized_data[class_name]['total']
+                valid_class_num += 1
+                print(class_name + ': [AP@.75: ' + str(format(summarized_data[class_name]['75'], '.4f')) + ' AP@.5:.95: ' + str(format(summarized_data[class_name]['total'], '.4f')) + ']')
+                break
     print('Total mAP@.75: ' + str(format(float(total_ap_at_75/valid_class_num), '.4f')))
     newstr += 'Total mAP@.75: ' + str(format(float(total_ap_at_75/valid_class_num), '.4f')) + '\n'
 
