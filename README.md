@@ -1,3 +1,55 @@
+## Installation
+!git clone https://github.com/IDEA-Research/DINO.git <br>
+!cd DINO <br>
+
+Follow the instruction to install pytorch and torchvision on https://pytorch.org/get-started/locally/. <br>
+!pip install -r requirements.txt
+
+<br>
+Compiling CUDA operators <br>
+!cd models/dino/ops <br>
+!python setup.py build install <br>
+!python test.py <br>
+!cd ../../.. <br>
+ 
+## Pre-process the data
+We are assuming that the data has fixed labeling format similar to coco-annotations. <br>
+unzip the file if it is zipped (sudo apt install p7zip-full) <br>
+
+!7z x folder_name.zip <br>
+!preprocess.py folder_name 
+
+
+## Train
+!bash DINO_train_dist.sh $dataset_folder_path [also change other necessary path's and values in the .sh file]
+
+
+## Validation
+One can simply use DINO_eval.sh in scripts folder for basic info. But we can use DINO_eval.sh in the main directory to use validate-railway-dataset.py for more details. <br>
+
+!bash DINO_eval.sh $path_to_dataset $path_to_checkpoint
+
+
+##
+##
+##
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # DINO <img src="figs/dinosaur.png" width="30">
 [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/dino-detr-with-improved-denoising-anchor-1/object-detection-on-coco-minival)](https://paperswithcode.com/sota/object-detection-on-coco-minival?p=dino-detr-with-improved-denoising-anchor-1)
 [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/dino-detr-with-improved-denoising-anchor-1/object-detection-on-coco)](https://paperswithcode.com/sota/object-detection-on-coco?p=dino-detr-with-improved-denoising-anchor-1)
