@@ -201,7 +201,7 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
         command_line = 'python3 validate-railway-dataset.py  --output_dir logs/exp_railway  -c config/DINO/DINO_4scale.py --coco_path datasets/DINO/railway --data_type railway --eval --resume railway_dino.pth --options dn_scalar=100 railway embed_init_tgt=TRUE dn_label_coef=1.0 dn_bbox_coef=1.0 use_ema=False dn_box_noise_scale=1.0 batch_size=1 num_classes=58 dn_labelbook_size=58'
     else:
         command_line = 'python3 validate-railway-dataset.py  --output_dir logs/exp_catenary  -c config/DINO/DINO_4scale.py --coco_path datasets/DINO/catenary --data_type catenary --eval --resume railway_dino.pth --options dn_scalar=100 railway embed_init_tgt=TRUE dn_label_coef=1.0 dn_bbox_coef=1.0 use_ema=False dn_box_noise_scale=1.0 batch_size=1 num_classes=40 dn_labelbook_size=40'
-    nd_str = str(timeStamped()) + ' command line here!!!!! \n\n'
+    nd_str = str(timeStamped()) + ' ' + command_line +' \n\n'
     f.write(nd_str)
 
     avg_fps = 0
