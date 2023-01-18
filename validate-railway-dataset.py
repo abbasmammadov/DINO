@@ -479,7 +479,7 @@ def main(args):
     if args.eval:
         os.environ['EVAL_FLAG'] = 'TRUE'
         test_stats, coco_evaluator = evaluate(model, criterion, postprocessors,
-                                              data_loader_val, base_ds, device, args.output_dir,
+                                              data_loader_val, base_ds, device, args.output_dir,coco_path=args.coco_path,
                                               data_type=args.data_type, class_info=category_info, wo_class_error=wo_class_error, args=args)
         if args.output_dir:
             utils.save_on_master(coco_evaluator.coco_eval["bbox"].eval, output_dir / "eval.pth")
@@ -549,7 +549,7 @@ def main(args):
         # eval ema
         if args.use_ema:
             ema_test_stats, ema_coco_evaluator = evaluate(
-                ema_m.module, criterion, postprocessors, data_loader_val, base_ds, device, args.output_dir,
+                ema_m.module, criterion, postprocessors, data_loader_val, base_ds, device, args.output_dir, 
                 wo_class_error=wo_class_error, args=args, logger=(logger if args.save_log else None)
             )
             log_stats.update({f'ema_test_{k}': v for k,v in ema_test_stats.items()})

@@ -138,7 +138,7 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
 
 
 @torch.no_grad()
-def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, output_dir, data_type = 'railway', class_info = [], wo_class_error=False, args=None, logger=None):
+def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, output_dir, coco_path='', data_type = 'railway', class_info = [], wo_class_error=False, args=None, logger=None):
     try:
         need_tgt_for_training = args.use_dn
     except:
@@ -219,7 +219,6 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
         # print("keys of samples:", samples.shape)
 
         curr_id = int(targets[0]['image_id'].item())
-        # print(targets)
         # targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
         targets = [{k: to_device(v, device) for k, v in t.items()} for t in targets]
 
@@ -316,6 +315,47 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
         temp_gt += '\n'
 
 
+        
+        if int(curr_id) < 15:
+            import torchvision, random
+            
+            source = torchvision.io.read_image(coco_path + "/test/" + img_names[curr_id])
+            gt_img = source.clone()
+            result_img = source.clone()
+            for i in range(targets[0]['boxes'].shape[0]):
+                gtbbox = targets[0]['boxes'][i].clone()
+                print(gtbbox[0].item(), gtbbox[1].item(), gtbbox[2].item(), gtbbox[3].item())
+                #print([gtbbox)
+                
+                gtbbox[0] = targets[0]['boxes'][i][0].item() - targets[0]['boxes'][i][2].item()/2.0
+                gtbbox[1] = targets[0]['boxes'][i][1].item() - targets[0]['boxes'][i][3].item()/2.0
+                gtbbox[2] = targets[0]['boxes'][i][0].item() + targets[0]['boxes'][i][2].item()/2.0
+                gtbbox[3] = targets[0]['boxes'][i][1].item() + targets[0]['boxes'][i][3].item()/2.0
+                gtbbox[0] *= 1920
+                gtbbox[1] *= 1080
+                gtbbox[2] *= 1920
+                gtbbox[3] *= 1080
+                class_name = class_names[int(targets[0]['labels'][i])]
+                gt_img = torchvision.utils.draw_bounding_boxes(gt_img, gtbbox[None, :], colors=["#00FF00"], labels=[str(int(targets[0]['labels'][i]))], font='Ubuntu-Regular.ttf', font_size=48, width=5)
+            torchvision.utils.save_image(torch.tensor(gt_img, dtype=torch.float32)/255.0, output_dir + "/" + str(curr_id) + "_gt.jpg")
+
+            for i in range(new_boxes.shape[0]):
+                rbbox = new_boxes[i].clone()
+                print(rbbox[0].item(), rbbox[1].item(), rbbox[2].item(), rbbox[3].item())
+                #print([gtbbox)
+                
+                rbbox[0] = new_boxes[i][0].item() - new_boxes[i][2].item()/2.0
+                rbbox[1] = new_boxes[i][1].item() - new_boxes[i][3].item()/2.0
+                rbbox[2] = new_boxes[i][0].item() + new_boxes[i][2].item()/2.0
+                rbbox[3] = new_boxes[i][1].item() + new_boxes[i][3].item()/2.0
+                class_name = labeling_with_names[i]
+                result_img = torchvision.utils.draw_bounding_boxes(result_img, rbbox[None, :], colors=["#00FF00"], labels=[str(int(new_labels[i]))], font='Ubuntu-Regular.ttf', font_size=48, width=5)
+            torchvision.utils.save_image(torch.tensor(result_img, dtype=torch.float32)/255.0, output_dir + "/" + str(curr_id) + "_pred.jpg")
+            
+
+            
+        
+
         Time = end_time_for_inference - start_time_for_inference
         fps = 1/Time
         avg_fps += fps
@@ -332,8 +372,8 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
         if 'segm' in postprocessors.keys():
             target_sizes = torch.stack([t["size"] for t in targets], dim=0)
             results = postprocessors['segm'](results, outputs, orig_target_sizes, target_sizes)
+            
         res = {target['image_id'].item(): output for target, output in zip(targets, results)}
-
         if coco_evaluator is not None:
             coco_evaluator.update(res)
 
@@ -365,7 +405,9 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
                 tgt: dict.
 
                 """
+                
                 # compare gt and res (after postprocess)
+                '''
                 gt_bbox = tgt['boxes']
                 gt_label = tgt['labels']
                 gt_info = torch.cat((gt_bbox, gt_label.unsqueeze(-1)), 1)
@@ -386,6 +428,8 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
                 if 'res_info' not in output_state_dict:
                     output_state_dict['res_info'] = []
                 output_state_dict['res_info'].append(res_info.cpu())
+                '''
+                
 
             # # for debug only
             # import random
@@ -534,6 +578,7 @@ def test(model, criterion, postprocessors, data_loader, base_ds, device, output_
             target_sizes = torch.stack([t["size"] for t in targets], dim=0)
             results = postprocessors['segm'](results, outputs, orig_target_sizes, target_sizes)
         res = {target['image_id'].item(): output for target, output in zip(targets, results)}
+        
         for image_id, outputs in res.items():
             _scores = outputs['scores'].tolist()
             _labels = outputs['labels'].tolist()
@@ -546,6 +591,7 @@ def test(model, criterion, postprocessors, data_loader, base_ds, device, output_
                         "bbox": b, 
                         "score": s,
                         }
+                
                 final_res.append(itemdict)
 
     if args.output_dir:
